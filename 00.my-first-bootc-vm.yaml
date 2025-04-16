@@ -13,9 +13,8 @@ spec:
       name: my-first-bootc-rootdisk
     spec:
       source:
-        pvc:
-          name: my-first-bootc-os-disk
-          namespace: vms
+        registry:
+          url: docker://quay.linuxero-agrio.com.mx:8443/jvarela/custom-image-mode-os-image:pipeline-prod
       storage:
         resources:
           requests:
