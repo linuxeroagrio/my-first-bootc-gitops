@@ -1,0 +1,89 @@
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  labels:
+    app: my-first-bootc
+  name: my-first-bootc
+  namespace: vms
+spec:
+  dataVolumeTemplates:
+  - apiVersion: cdi.kubevirt.io/v1beta1
+    kind: DataVolume
+    metadata:
+      name: my-first-bootc-rootdisk
+    spec:
+      source:
+        pvc:
+          name: my-first-bootc-os-disk
+          namespace: vms
+      storage:
+        resources:
+          requests:
+            storage: 30Gi
+  runStrategy: Always
+  template:
+    metadata:
+      annotations:
+        vm.kubevirt.io/flavor: small
+        vm.kubevirt.io/os: rhel9
+        vm.kubevirt.io/workload: server
+      labels:
+        app: my-first-bootc
+        kubevirt.io/domain: my-first-bootc
+        kubevirt.io/size: small
+        network.kubevirt.io/headlessService: headless
+    spec:
+      architecture: amd64
+      domain:
+        cpu:
+          cores: 1
+          sockets: 1
+          threads: 1
+        devices:
+          disks:
+          - disk:
+              bus: virtio
+            name: rootdisk
+          - disk:
+              bus: virtio
+            name: cloudinitdisk
+          interfaces:
+          - masquerade: {}
+            model: virtio
+            name: default
+          - bridge: {}
+            model: virtio
+            name: home-network
+          logSerialConsole: false
+          rng: {}
+        features:
+          acpi: {}
+          smm:
+            enabled: true
+        firmware:
+          bootloader:
+            efi:
+              secureBoot: false
+        machine:
+          type: pc-q35-rhel9.4.0
+        memory:
+          guest: 2Gi
+        resources: {}
+      networks:
+      - name: default
+        pod: {}
+      - multus:
+          networkName: default/home-network
+        name: home-network
+      terminationGracePeriodSeconds: 180
+      volumes:
+      - dataVolume:
+          name: my-first-bootc-rootdisk
+        name: rootdisk
+      - cloudInitNoCloud:
+          userData: |-
+            #cloud-config
+            user: cloud-user
+            password: thp5-axpm-2i6d
+            chpasswd: { expire: False }
+        name: cloudinitdisk

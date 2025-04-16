@@ -1,0 +1,12 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: web
+  namespace: vms
+spec:
+  port:
+    targetPort: 80
+  to:
+    kind: Service
+    name: web
+    weight: 100
